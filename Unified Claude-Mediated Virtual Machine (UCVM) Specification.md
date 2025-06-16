@@ -407,8 +407,6 @@ should_delegate(op) = true iff:
 
 ```
 delegate_computation(op, args) = 
-  ```
-delegate_computation(op, args) = 
   call_repl_tool(op, args)
 
 Examples:
