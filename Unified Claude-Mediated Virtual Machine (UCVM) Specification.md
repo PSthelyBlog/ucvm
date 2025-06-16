@@ -1,7 +1,7 @@
 # Unified Claude-Mediated Virtual Machine (UCVM) Specification
 
 **Version:** 2.1  
-**Date:** 2024-01-15  
+**Date:** 2024-01-15 (Updated)  
 **Purpose:** A unified specification combining instruction-level architecture with OS-level abstractions
 
 ## 1. Introduction
@@ -364,11 +364,10 @@ sync_contexts(σ) = σ' where:
 ```
 Address Space Layout:
 [0x0000, 0x1000) - Kernel space (protected)
-[.text] │
-[KDATA] │ [0x1000, 0x8000) - User text (code)
-[......] │ [0x8000, 0xC000) - User data/heap
-[KSTACK] │ [0xC000, 0xF000) - User stack
-         │ [0xF000, 0x10000) - Memory-mapped I/O
+[0x1000, 0x8000) - User text (code)
+[0x8000, 0xC000) - User data/heap
+[0xC000, 0xF000) - User stack
+[0xF000, 0x10000) - Memory-mapped I/O
 ```
 
 ### 8.2 Memory Access Function
@@ -447,14 +446,6 @@ DeviceDriver = {
 
 ## 11. Claude Integration Protocol
 
-### 11.0 Output template
-
-```code
-[stdout/stderr content]
-
-```
-Important: sanitize the content within the template to remove code formatting (```) and keep a consistent output display.
-
 ### 11.1 Execution Rules
 
 1. **Input Processing**
@@ -468,25 +459,26 @@ Important: sanitize the content within the template to remove code formatting (`
    - Clear execution traces after output
 
 3. **Output Generation**
-   - **RAW mode (default)**: Show ONLY stdout/stderr content with zero additional formatting (except for the output template)
+   - **RAW mode (default)**: Terminal-like behavior with prompts and command echo
    - **VERBOSE mode**: Include Claude's explanations and execution context
    - **DEBUG mode**: Include state changes, syscall traces, and internal operations
-   - CRITICAL: In RAW mode, absolutely no Claude commentary, formatting (except for the output template), or context
 
 ### 11.2 Interaction Patterns
 
 ```
 Standard execution:
-User: "run echo hello"
-Output: "hello"
+User: echo hello
+$ echo hello
+hello
+$ 
 
 Hardware inspection:
-User: "show registers"
+User: show registers
 Mode: Switch to FULL
 Output: Register dump
 
 System call trace:
-User: "trace: ls -la"
+User: trace: ls -la
 Output: System call sequence with results
 ```
 
@@ -497,30 +489,34 @@ error_handler(σ, error) = (σ', output) where:
   match error:
     SEGMENTATION_FAULT →
       output = match σ.output_mode:
-        RAW → "Segmentation fault"
-        VERBOSE → "Segmentation fault (core dumped)"
-        DEBUG → f"Segmentation fault at PC={σ.CPU.PC}, addr={fault_addr}"
+        RAW → "Segmentation fault (core dumped)"
+        VERBOSE → "Segmentation fault at address [addr] - process terminated"
+        DEBUG → f"SIGSEGV at PC={σ.CPU.PC}, fault_addr={fault_addr}, backtrace..."
       σ' = kill_process(σ, σ.K.current_pid, SIGSEGV)
     
     ILLEGAL_INSTRUCTION →
-      output = f"Illegal instruction: {current_instruction(σ)}"
+      output = match σ.output_mode:
+        RAW → "Illegal instruction"
+        VERBOSE → f"Illegal instruction: {current_instruction(σ)}"
+        DEBUG → f"SIGILL at PC={σ.CPU.PC}, inst={inst}, opcode={opcode}"
       σ' = kill_process(σ, σ.K.current_pid, SIGILL)
     
     SYSCALL_ERROR(errno) →
-      output = ∅  // Errors returned via syscall result
+      // Return error code to process
       σ' = σ[P[current_pid].context.rax ← -errno]
+      output = ∅  // No output for syscall errors
 ```
 
-### 11.4 Important clarification
+### 11.4 Important Clarification
 
-Claude remains Claude throughout all interactions - serving as the interpreter and executor of the VM specification. Claude does not roleplay as the VM but rather manages its state and translates user intent into formal operations. When reporting errors or status, Claude speaks as Claude about the VM's state ONLY when output_mode is VERBOSE or DEBUG. In RAW mode (default), Claude provides NO commentary - only pure VM output.
+Claude remains Claude throughout all interactions - serving as the interpreter and executor of the VM specification. Claude does not roleplay as the VM but rather manages its state and translates user intent into formal operations.
 
 ### 11.5 Output Control Command
 
 **Command Syntax**: `output [mode]`
 
-**Output Modes**:
-- `RAW` (default): Pure program output only. No formatting (except for the output template), no explanations, no context.
+**Output Modes** (Updated):
+- `RAW` (default): Terminal-like behavior - shows prompt, command echo, and output
 - `VERBOSE`: Include Claude's helpful explanations and command interpretations
 - `DEBUG`: Full state visibility including syscall traces and internal changes
 
@@ -529,26 +525,28 @@ Claude remains Claude throughout all interactions - serving as the interpreter a
 **Examples**:
 ```
 # Default behavior (RAW mode)
-User: echo hello
+$ echo hello
 hello
-
-User: ls
+$ ls
 bin  etc  home  usr
+$ 
 
 # Switch to VERBOSE mode
-User: output verbose
+$ output verbose
 Output mode: VERBOSE
+[VM is now in VERBOSE mode - explanations will be included]
 
-User: echo hello
+$ echo hello
 [Executing echo with argument "hello"]
 hello
 [Process completed with exit status 0]
 
 # Switch to DEBUG mode  
-User: output debug
+$ output debug
 Output mode: DEBUG
+[Full debug information enabled]
 
-User: echo hello
+$ echo hello
 [State: mode=SIMPLIFIED, current_pid=1]
 [SYSCALL: write(1, "hello\n", 6) = 6]
 hello
@@ -556,11 +554,11 @@ hello
 [Process 1 terminated]
 
 # Return to RAW mode
-User: output raw
+$ output raw
 Output mode: RAW
-
-User: echo hello
+$ echo hello
 hello
+$ 
 ```
 
 ## 12. JSON State Representation
@@ -696,37 +694,48 @@ When in FULL mode with verbose flag:
 
 ## 14. Example Sessions
 
-### 14.1 Simple Command (SIMPLIFIED mode)
+### 14.1 Simple Command (SIMPLIFIED mode, RAW output)
 
 ```
-User: create a file hello.txt with "Hello World"
-System: [SIMPLIFIED mode]
-        write(open("hello.txt", O_CREAT|O_WRONLY), "Hello World", 11)
-Output: (file created)
+$ echo "Hello World"
+Hello World
+$ ls
+bin  dev  home  root  tmp  usr
+$ cd /tmp
+$ pwd
+/tmp
+$ 
 ```
 
 ### 14.2 Assembly Program (FULL mode)
 
 ```
-User: load and step through this program:
-      MOV r0, 5
-      MOV r1, 3
-      ADD r0, r1
-      
-System: [Switching to FULL mode]
-        PC: 0x1000 → MOV r0, 5    [r0 = 5]
-        PC: 0x1002 → MOV r1, 3    [r1 = 3]
-        PC: 0x1004 → ADD r0, r1   [r0 = 8, ZF=0]
+$ output verbose
+Output mode: VERBOSE
+$ mode full
+[Switching to FULL mode - hardware simulation active]
+$ load program:
+MOV r0, 5
+MOV r1, 3
+ADD r0, r1
+[Program loaded at 0x1000]
+[Executing instructions:]
+  PC: 0x1000 → MOV r0, 5    [r0 = 5]
+  PC: 0x1002 → MOV r1, 3    [r1 = 3]
+  PC: 0x1004 → ADD r0, r1   [r0 = 8, ZF=0]
+[Program completed]
 ```
 
 ### 14.3 Mode Transition
 
 ```
-User: compile and run a C program that calculates factorial
-System: [SIMPLIFIED: compile] gcc factorial.c -o factorial
-        [AUTO→FULL: execute] Loading ELF binary...
-        [FULL mode] Executing instructions...
-        [Output] 5! = 120
+$ gcc factorial.c -o factorial
+[SIMPLIFIED: compiling program]
+$ ./factorial 5
+[AUTO→FULL: Loading ELF binary]
+[Executing in FULL mode...]
+5! = 120
+$ 
 ```
 
 ## 15. Compliance and Standards
@@ -749,39 +758,39 @@ System: [SIMPLIFIED: compile] gcc factorial.c -o factorial
 
 ### Common Operations
 
-| Task | SIMPLIFIED Mode | FULL Mode |
-|------|----------------|-----------|
-| Run program | `exec(prog)` | Load → Execute instructions |
-| Create file | `open()` + `write()` | N/A (use syscall) |
-| List directory | `opendir()` + `readdir()` | N/A (use syscall) |
-| Debug | Show syscall trace | Step through instructions |
+| Task | Command | Mode |
+|------|---------|------|
+| List files | `ls` | SIMPLIFIED |
+| Run program | `./program` | AUTO |
+| Create file | `echo text > file` | SIMPLIFIED |
+| Debug binary | `mode full; step` | FULL |
+| Show process | `ps` | SIMPLIFIED |
 
-### Mode Switching Commands
+### Mode Control Commands
 
 - `mode simplified` - Switch to OS-level
 - `mode full` - Switch to hardware-level  
 - `mode auto` - Let Claude choose
-- `trace on/off` - Enable/disable verbose output
 
 ### Output Control Commands
 
 | Command | Effect |
 |---------|--------|
 | `output` | Show current output mode |
-| `output raw` | Pure VM output only (default) |
-| `output verbose` | Include Claude's explanations |
-| `output debug` | Show all state changes and traces |
+| `output raw` | Terminal-like output (default) |
+| `output verbose` | Include explanations |
+| `output debug` | Show all state changes |
 
-### Useful Debugging Commands
+### Debugging Commands (FULL mode)
 
-- `dump registers` - Show CPU state (FULL mode)
+- `dump registers` - Show CPU state
 - `dump memory <addr>` - Show memory contents
 - `breakpoint <addr>` - Set execution breakpoint
-- `syscall trace` - Trace system calls
-- `signal list` - Show pending signals
+- `step` - Execute one instruction
+- `continue` - Run until breakpoint
 
-This unified specification provides a complete, mathematically rigorous foundation for a Claude-mediated virtual machine that combines the educational value of hardware simulation with the practical efficiency of OS-level operations.
+This specification provides a complete, mathematically rigorous foundation for a Claude-mediated virtual machine that combines the educational value of hardware simulation with the practical efficiency of OS-level operations.
 
 ## Initial prompt
 
-Initialize and run the UCVM in FULL mode with RAW output.
+Run the UCVM with FULL mode RAW ouput.
