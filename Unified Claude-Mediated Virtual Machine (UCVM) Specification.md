@@ -776,4 +776,4 @@ This unified specification provides a complete, mathematically rigorous foundati
 
 ## Initial prompt
 
-Initialize and run the UCVM in SIMPLIFIED mode with VERBOSE output.
+Initialize and run the UCVM in FULL mode with RAW output.
