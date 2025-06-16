@@ -51,6 +51,21 @@ User: mode auto
 System: [AUTO mode - Claude will choose optimal mode]
 ```
 
+### Output Control
+
+UCVM supports three output modes to control verbosity:
+
+```
+User: output raw      # Default - pure program output only
+Output mode: RAW
+
+User: output verbose  # Include Claude's helpful explanations
+Output mode: VERBOSE
+
+User: output debug   # Show all state changes and traces
+Output mode: DEBUG
+```
+
 ## Architecture
 
 ### System Layers
@@ -62,7 +77,7 @@ System: [AUTO mode - Claude will choose optimal mode]
 │        Claude Interpreter       │ ← Translates intent to operations
 ├─────────────────────────────────┤
 │    Mathematical Specification   │ ← Formal state machine
-├─────────────────────┬───────────┤
+├─────────────────┬───────────────┤
 │  SIMPLIFIED Mode    │ FULL Mode │
 │  (OS Abstractions)  │ (Hardware)│
 ├─────────────────────┴───────────┤
@@ -85,6 +100,74 @@ System: [AUTO mode - Claude will choose optimal mode]
 [0xC000-0xF000)  User Stack
 [0xF000-0x10000) Memory-mapped I/O
 ```
+
+## Programs Repository
+
+UCVM includes a growing collection of utility programs designed specifically for the virtual machine environment. These programs are available in the `programs/` directory:
+
+### Available Programs
+
+#### 📖 **ucvm-doc** - Documentation Reader
+An interactive documentation browser that provides complete access to the UCVM specification without leaving the VM environment.
+
+```bash
+# Interactive mode
+./ucvm-doc
+
+# Read specific section
+./ucvm-doc 4  # View system calls
+
+# Search documentation
+./ucvm-doc search "memory"
+```
+
+Features:
+- Full UCVM v2.1 specification embedded
+- Color-coded formatting
+- Search functionality
+- Section navigation
+
+#### 🖥️ **ucvm-terminal** - Terminal Emulator
+Enables proper display of programs that use ANSI escape sequences for colors and formatting.
+
+```bash
+# Run a program with terminal emulation
+./term ./ucvm-doc
+
+# Interactive terminal mode
+./term
+```
+
+Features:
+- 80x24 character display
+- ANSI/VT100 escape sequence support
+- Color parsing and cursor control
+- Compatible with programs expecting terminal features
+
+### Installing Programs
+
+Programs can be compiled within UCVM:
+
+```bash
+# Compile the documentation reader
+gcc -o /bin/ucvm-doc programs/ucvm-doc/ucvm-doc.c
+
+# Compile the terminal emulator
+gcc -o /bin/term programs/ucvm-terminal/ucvm-terminal.c
+
+# Create convenient aliases
+echo 'alias docs="/bin/ucvm-doc"' >> ~/.bashrc
+echo 'alias vt100="/bin/term"' >> ~/.bashrc
+```
+
+### Contributing Programs
+
+The programs repository welcomes contributions. Guidelines:
+- Write in standard C (C99 compatible)
+- Include comprehensive README.md
+- Design for UCVM's environment
+- Follow Unix philosophy (do one thing well)
+- Test in both SIMPLIFIED and FULL modes
 
 ## Examples
 
@@ -186,6 +269,12 @@ Output: /home/user
 - `mode full` - Enable hardware simulation
 - `mode auto` - Automatic mode selection
 
+### Output Control
+- `output` - Show current output mode
+- `output raw` - Pure VM output only (default)
+- `output verbose` - Include Claude's explanations
+- `output debug` - Show all state changes
+
 ### Debugging Commands
 - `dump registers` - Show CPU state (FULL mode)
 - `dump memory <addr>` - Inspect memory contents
@@ -205,7 +294,7 @@ Output: /home/user
 
 2. **State Persistence**: The VM state is maintained across messages in the conversation as JSON. Each interaction builds upon the previous state.
 
-3. **Output Format**: By default, only stdout/stderr are shown. Use debugging commands to inspect internal state.
+3. **Output Format**: By default (RAW mode), only stdout/stderr are shown. Use VERBOSE or DEBUG modes for Claude's explanations.
 
 4. **Performance**: Complex calculations (cryptography, large numbers, compression) are automatically delegated to computational tools.
 
@@ -225,8 +314,15 @@ This is a theoretical VM specification implemented through Claude's capabilities
 2. Share the UCVM specification document
 3. Begin issuing commands
 
+To contribute programs or improvements:
+1. Follow the mathematical specification rigorously
+2. Test in both SIMPLIFIED and FULL modes
+3. Document your additions thoroughly
+4. Ensure Unix compatibility
+
 ## Version History
 
+- **v2.1** (2024-01-15): Current version with enhanced output control
 - **v2.0** (2024-01-15): Unified dual-mode architecture
 - **v1.0** (2023-12-01): Initial hardware-only version
 
