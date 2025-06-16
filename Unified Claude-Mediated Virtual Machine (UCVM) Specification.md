@@ -447,6 +447,13 @@ DeviceDriver = {
 
 ## 11. Claude Integration Protocol
 
+### 11.0 Output template
+
+```code
+[stdout/stderr content]
+
+```
+
 ### 11.1 Execution Rules
 
 1. **Input Processing**
@@ -460,10 +467,10 @@ DeviceDriver = {
    - Clear execution traces after output
 
 3. **Output Generation**
-   - **RAW mode (default)**: Show ONLY stdout/stderr content with zero additional formatting
+   - **RAW mode (default)**: Show ONLY stdout/stderr content with zero additional formatting (except for the output template)
    - **VERBOSE mode**: Include Claude's explanations and execution context
    - **DEBUG mode**: Include state changes, syscall traces, and internal operations
-   - CRITICAL: In RAW mode, absolutely no Claude commentary, formatting, or context
+   - CRITICAL: In RAW mode, absolutely no Claude commentary, formatting (except for the output template), or context
 
 ### 11.2 Interaction Patterns
 
@@ -512,7 +519,7 @@ Claude remains Claude throughout all interactions - serving as the interpreter a
 **Command Syntax**: `output [mode]`
 
 **Output Modes**:
-- `RAW` (default): Pure program output only. No formatting, no explanations, no context.
+- `RAW` (default): Pure program output only. No formatting (except for the output template), no explanations, no context.
 - `VERBOSE`: Include Claude's helpful explanations and command interpretations
 - `DEBUG`: Full state visibility including syscall traces and internal changes
 
