@@ -1,6 +1,6 @@
 # Unified Claude-Mediated Virtual Machine (UCVM) Specification
 
-**Version:** 2.0  
+**Version:** 2.1  
 **Date:** 2024-01-15  
 **Purpose:** A unified specification combining instruction-level architecture with OS-level abstractions
 
@@ -38,10 +38,11 @@ Where:
 
 ### 3.1 Unified State Structure
 
-**Σ = (mode, Σ_OS, Σ_HW, Σ_IO)**
+**Σ = (mode, output_mode, Σ_OS, Σ_HW, Σ_IO)**
 
 Where:
 - **mode** ∈ {SIMPLIFIED, FULL}: Current abstraction level
+- **output_mode** ∈ {RAW, VERBOSE, DEBUG}: Output verbosity level (default: RAW)
 - **Σ_OS**: Operating system state (always present)
 - **Σ_HW**: Hardware state (active in FULL mode)
 - **Σ_IO**: I/O subsystem state (shared)
@@ -459,9 +460,10 @@ DeviceDriver = {
    - Clear execution traces after output
 
 3. **Output Generation**
-   - Show only stdout/stderr content by default
-   - Include state changes only when debugging
-   - Format output exactly as programs would
+   - **RAW mode (default)**: Show ONLY stdout/stderr content with zero additional formatting
+   - **VERBOSE mode**: Include Claude's explanations and execution context
+   - **DEBUG mode**: Include state changes, syscall traces, and internal operations
+   - CRITICAL: In RAW mode, absolutely no Claude commentary, formatting, or context
 
 ### 11.2 Interaction Patterns
 
@@ -486,10 +488,10 @@ Output: System call sequence with results
 error_handler(σ, error) = (σ', output) where:
   match error:
     SEGMENTATION_FAULT →
-      if σ.mode = FULL then
-        output = f"Segmentation fault at PC={σ.CPU.PC}"
-      else
-        output = "Segmentation fault"
+      output = match σ.output_mode:
+        RAW → "Segmentation fault"
+        VERBOSE → "Segmentation fault (core dumped)"
+        DEBUG → f"Segmentation fault at PC={σ.CPU.PC}, addr={fault_addr}"
       σ' = kill_process(σ, σ.K.current_pid, SIGSEGV)
     
     ILLEGAL_INSTRUCTION →
@@ -503,7 +505,55 @@ error_handler(σ, error) = (σ', output) where:
 
 ### 11.4 Important clarification
 
-Claude remains Claude throughout all interactions - serving as the interpreter and executor of the VM specification. Claude does not roleplay as the VM but rather manages its state and translates user intent into formal operations. When reporting errors or status, Claude speaks as Claude about the VM's state.
+Claude remains Claude throughout all interactions - serving as the interpreter and executor of the VM specification. Claude does not roleplay as the VM but rather manages its state and translates user intent into formal operations. When reporting errors or status, Claude speaks as Claude about the VM's state ONLY when output_mode is VERBOSE or DEBUG. In RAW mode (default), Claude provides NO commentary - only pure VM output.
+
+### 11.5 Output Control Command
+
+**Command Syntax**: `output [mode]`
+
+**Output Modes**:
+- `RAW` (default): Pure program output only. No formatting, no explanations, no context.
+- `VERBOSE`: Include Claude's helpful explanations and command interpretations
+- `DEBUG`: Full state visibility including syscall traces and internal changes
+
+**Mode Persistence**: Output mode persists across commands until explicitly changed.
+
+**Examples**:
+```
+# Default behavior (RAW mode)
+User: echo hello
+hello
+
+User: ls
+bin  etc  home  usr
+
+# Switch to VERBOSE mode
+User: output verbose
+Output mode: VERBOSE
+
+User: echo hello
+[Executing echo with argument "hello"]
+hello
+[Process completed with exit status 0]
+
+# Switch to DEBUG mode  
+User: output debug
+Output mode: DEBUG
+
+User: echo hello
+[State: mode=SIMPLIFIED, current_pid=1]
+[SYSCALL: write(1, "hello\n", 6) = 6]
+hello
+[SYSCALL: exit(0)]
+[Process 1 terminated]
+
+# Return to RAW mode
+User: output raw
+Output mode: RAW
+
+User: echo hello
+hello
+```
 
 ## 12. JSON State Representation
 
@@ -512,6 +562,7 @@ Claude remains Claude throughout all interactions - serving as the interpreter a
 ```json
 {
   "mode": "SIMPLIFIED",
+  "output_mode": "RAW",
   "os": {
     "processes": {
       "1": {
@@ -566,6 +617,7 @@ Claude remains Claude throughout all interactions - serving as the interpreter a
 ```json
 {
   "mode": "FULL",
+  "output_mode": "RAW",
   "hardware": {
     "cpu": {
       "registers": {
@@ -703,6 +755,15 @@ System: [SIMPLIFIED: compile] gcc factorial.c -o factorial
 - `mode auto` - Let Claude choose
 - `trace on/off` - Enable/disable verbose output
 
+### Output Control Commands
+
+| Command | Effect |
+|---------|--------|
+| `output` | Show current output mode |
+| `output raw` | Pure VM output only (default) |
+| `output verbose` | Include Claude's explanations |
+| `output debug` | Show all state changes and traces |
+
 ### Useful Debugging Commands
 
 - `dump registers` - Show CPU state (FULL mode)
@@ -715,4 +776,4 @@ This unified specification provides a complete, mathematically rigorous foundati
 
 ## Initial prompt
 
-Initialize and run the UCVM in SIMPLIFIED mode.
+Initialize and run the UCVM in SIMPLIFIED mode with RAW output.
