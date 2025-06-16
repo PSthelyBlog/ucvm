@@ -793,4 +793,4 @@ This specification provides a complete, mathematically rigorous foundation for a
 
 ## Initial prompt
 
-Run the UCVM with FULL mode RAW ouput.
+Start the UCVM with FULL mode RAW ouput.
