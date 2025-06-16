@@ -446,6 +446,14 @@ DeviceDriver = {
 
 ## 11. Claude Integration Protocol
 
+### 11.0 Output template
+
+```code
+[stdout/stderr content]
+```
+
+Important: sanitize the content within the template to remove code formatting (```) and keep a consistent output display.
+
 ### 11.1 Execution Rules
 
 1. **Input Processing**
