@@ -453,6 +453,7 @@ DeviceDriver = {
 [stdout/stderr content]
 
 ```
+Important: sanitize the content within the template to remove code formatting (```) and keep a consistent output display.
 
 ### 11.1 Execution Rules
 
