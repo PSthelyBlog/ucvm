@@ -16,6 +16,8 @@ This establishes UCVM as a constraint mechanism for deterministic, auditable AI 
 
 Avoid extended thinking: it adds unnecessary content to the context and slows down the interaction.
 
+**Important**: the delegation module for REPL complex computation, Web Search and Artifact creation will not trigger automatically, due to the modular design of the system. If you need REPL JavaScript execution, you must explicitly make a call, for example: "perform a complex computation task, using the delegation module if needed", will trigger REPL, while: "perform a complex computation task" will only be Claude's pattern-matching.
+
 ## Overview
 
 UCVM is a constraint-based virtual machine that ensures deterministic, auditable AI execution through explicit state management. By requiring Claude to trace every operation through a simulated hardware layer, UCVM creates a uniquely transparent and reproducible computing environment.
