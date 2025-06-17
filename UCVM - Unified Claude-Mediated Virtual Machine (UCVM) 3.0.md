@@ -793,7 +793,28 @@ graph TD
           "properties": {
             "registers": { "type": "object" },
             "flags": { "type": "object" },
-            "mode": { "type": "string" }
+            "mode": { "type": "string" },
+            "syscall_state": {
+              "type": "object",
+              "properties": {
+                "last_syscall": {
+                  "type": "object",
+                  "properties": {
+                    "number": { "type": "integer" },
+                    "name": { "type": "string" },
+                    "args": { "type": "array" },
+                    "result": { "type": ["object", "string", "number", "null"] },
+                    "errno": { "type": "integer" },
+                    "timestamp": { "type": "integer" }
+                  }
+                },
+                "syscall_count": { "type": "integer" },
+                "active_syscall": {
+                  "type": ["object", "null"],
+                  "description": "Currently executing syscall, null if none"
+                }
+              }
+            }
           }
         }
       }
