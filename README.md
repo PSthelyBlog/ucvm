@@ -12,7 +12,7 @@ The major improvements:
 * State management with mandatory JSON artifacts
 * System call interface with delegation support
 * Extensible plugin architecture
-* No more formal mathematical representation (not proved to be better)
+* No more formal mathematical representation (not proved to be better)   
 This establishes UCVM as a constraint mechanism for deterministic, auditable AI execution through mandatory state tracking and hardware simulation. The modular design allows independent component updates while maintaining system integrity.
 
 Avoid extended thinking: it adds unnecessary content to the context and slows down the interaction.
