@@ -14,6 +14,8 @@ The major improvements:
 * Extensible plugin architecture
 This establishes UCVM as a constraint mechanism for deterministic, auditable AI execution through mandatory state tracking and hardware simulation. The modular design allows independent component updates while maintaining system integrity.
 
+Avoid extended thinking: it adds unnecessary content to the context and slows down the interaction.
+
 ## Overview
 
 UCVM is a constraint-based virtual machine that ensures deterministic, auditable AI execution through explicit state management. By requiring Claude to trace every operation through a simulated hardware layer, UCVM creates a uniquely transparent and reproducible computing environment.
