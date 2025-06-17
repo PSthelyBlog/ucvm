@@ -1,335 +1,283 @@
-# Unified Claude-Mediated Virtual Machine (UCVM)
+# UCVM - Unified Claude-Mediated Virtual Machine
 
-A mathematically rigorous, dual-mode virtual machine that operates through natural language, combining hardware-level simulation with OS-level abstractions.
+[![Version](https://img.shields.io/badge/version-3.0-blue.svg)](https://github.com/ucvm/ucvm)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Claude Compatible](https://img.shields.io/badge/claude-compatible-purple.svg)](https://claude.ai)
+
+## Note from the developer
+
+This revised version of the UCVM system provides a more robust architecture designed to be fully modular and extensible, and allows a more consistent behavior for the system state management and User Experience.
+The major improvements:
+* Core system module with constraint-based execution
+* State management with mandatory JSON artifacts
+* System call interface with delegation support
+* Extensible plugin architecture
+This establishes UCVM as a constraint mechanism for deterministic, auditable AI execution through mandatory state tracking and hardware simulation. The modular design allows independent component updates while maintaining system integrity.
 
 ## Overview
 
-UCVM is a unique virtual machine where Claude AI serves as the interpreter, translating natural language commands into formal mathematical operations on a JSON-based VM state. Unlike traditional VMs, UCVM can seamlessly switch between:
+UCVM is a constraint-based virtual machine that ensures deterministic, auditable AI execution through explicit state management. By requiring Claude to trace every operation through a simulated hardware layer, UCVM creates a uniquely transparent and reproducible computing environment.
 
-- **SIMPLIFIED mode**: Direct OS-level operations for practical tasks
-- **FULL mode**: Complete hardware simulation for educational purposes
+### 🎯 Core Innovation
 
-The entire system is specified using formal mathematics rather than implementation code, ensuring precision and verifiability.
+Unlike traditional VMs that prioritize performance, UCVM uses hardware simulation as a **constraint mechanism** to ensure that every computational step is:
+- **Explicit** - No hidden operations or implicit state changes
+- **Traceable** - Complete execution history through state transitions  
+- **Deterministic** - Same input + state always produces same output
+- **Auditable** - All operations visible in the state artifact
 
-## Key Features
+## Features
 
-- **🧮 Mathematical Foundation**: Formally specified as a state machine M = (Σ, I, O, δ, λ, C)
-- **🔄 Dual-Mode Operation**: Switch between OS-level and hardware-level abstractions
-- **💬 Natural Language Interface**: Control the VM using plain English
-- **🐧 Unix Compliance**: Full Single Unix Specification compatibility
-- **📚 Educational Value**: Step through CPU instructions, inspect registers, trace system calls
-- **⚡ Intelligent Execution**: Automatic delegation of complex computations to REPL
-- **🔒 Security**: Memory protection, privilege separation, resource limits
+### 🔄 Dual-Mode Operation
+- **SIMPLIFIED Mode**: Hardware execution invisible to users (but still enforced)
+- **FULL Mode**: Complete hardware visibility for debugging and learning
+
+### 📝 Natural Language Interface
+- Execute commands in plain English: `"search for Python tutorials"`
+- Seamless translation to system calls and hardware operations
+- Context-aware command interpretation
+
+### 🔧 Modular Architecture
+- Independent, extensible modules
+- Clean interfaces for adding new capabilities
+- Plugin system for custom extensions
+
+### 🌐 Integrated Delegation
+- **Web Search**: Access real-time information via `search` command
+- **REPL/Analysis**: Execute JavaScript for complex computations
+- **Extensible**: Add new external services through the delegation framework
+
+### 📊 Complete State Persistence
+- Every state change tracked in JSON artifacts
+- Perfect reproducibility across sessions
+- Built-in checkpointing and recovery
+
+## Why UCVM?
+
+### The Problem
+Traditional AI assistants operate as "black boxes" - you give them input and get output, but the intermediate steps are opaque. This makes it difficult to:
+- Verify correctness of complex operations
+- Reproduce exact execution sequences
+- Teach computer science concepts effectively
+- Build trust in AI-assisted computation
+
+### The Solution
+UCVM constrains Claude to execute all operations through a simulated hardware layer, making every computational step explicit and verifiable. This creates:
+
+1. **Trustworthy Execution** - See exactly how results are computed
+2. **Perfect Reproducibility** - Same state + input = same output, always
+3. **Educational Transparency** - Learn by watching real execution
+4. **Audit Trail** - Complete history of all operations
+
+## Requirements
+
+- **Claude (Anthropic)** - UCVM is designed specifically for Claude
+- **Artifacts enabled** - For state persistence via JSON artifacts
+- **Web Search** (optional) - For search functionality
+- **REPL/Analysis tool** (optional) - For calc functionality
 
 ## Quick Start
 
-### Basic Usage
+### 1. Initialize UCVM
 
-Simply describe what you want to do in natural language:
+Simply inject the UCVM specification document to the context (add from Github, or add local file, or copy/paste)
 
-```
-User: create a file hello.txt containing "Hello, World!"
-Output: (file created)
+Claude will:
+1. Create a JSON state artifact
+2. Initialize the system with process 1 (init)
+3. Display the terminal prompt
 
-User: run echo "Hello from UCVM"
-Output: Hello from UCVM
-
-User: list files in the current directory
-Output: hello.txt
-```
-
-### Mode Switching
-
-```
-User: mode full
-System: [Switched to FULL mode - hardware simulation active]
-
-User: mode simplified  
-System: [Switched to SIMPLIFIED mode - OS-level operations]
-
-User: mode auto
-System: [AUTO mode - Claude will choose optimal mode]
+You'll see:
+```code
+UCVM 3.0 initialized
+$ 
 ```
 
-### Output Control
+### 2. Basic Usage
 
-UCVM supports three output modes to control verbosity:
+Terminal output in code blocks:
+```code
+$ echo "Hello, UCVM!"
+Hello, UCVM!
 
+$ ls
+bin  etc  home  usr  tmp
+
+$ search "latest AI news"
+[Searching web...]
+[Results displayed]
+
+$ calc "Math.sqrt(2) * Math.PI"
+[Executing in REPL...]
+4.442882938158366
 ```
-User: output raw      # Default - pure program output only
+
+### 3. Mode Switching
+
+```code
+# Switch to FULL mode to see hardware details
+$ mode full
+Switched to FULL mode
+
+# View CPU registers
+$ dump registers
+r0: 0x0000  r1: 0x0000  r2: 0x0000  r3: 0x0000
+r4: 0x0000  r5: 0x0000  r6: 0x0000  r7: 0x0000
+PC: 0x1000  SP: 0xEF00  FLAGS: ----
+
+# Return to SIMPLIFIED mode
+$ mode simplified
+Switched to SIMPLIFIED mode
+```
+
+### 4. Output Modes
+
+```code
+# Default RAW mode - clean terminal output
+$ output raw
 Output mode: RAW
 
-User: output verbose  # Include Claude's helpful explanations
+# VERBOSE mode - includes Claude's helpful feedback  
+$ output verbose
 Output mode: VERBOSE
+[Claude: Now I'll include explanations with commands]
 
-User: output debug   # Show all state changes and traces
+# DEBUG mode - full state visibility
+$ output debug
 Output mode: DEBUG
+[State changes will be shown for all operations]
 ```
 
 ## Architecture
 
-### System Layers
+### System Components
 
 ```
-┌─────────────────────────────────┐
-│   Natural Language Interface    │ ← You are here
-├─────────────────────────────────┤
-│        Claude Interpreter       │ ← Translates intent to operations
-├─────────────────────────────────┤
-│    Mathematical Specification   │ ← Formal state machine
-├─────────────────┬───────────────┤
-│  SIMPLIFIED Mode    │ FULL Mode │
-│  (OS Abstractions)  │ (Hardware)│
-├─────────────────────┴───────────┤
-│      JSON State Representation  │
-└─────────────────────────────────┘
+┌─────────────────────────────────────────┐
+│        Claude Integration Layer          │
+├─────────────────────────────────────────┤
+│          Core System Module             │
+├─────┬─────┬─────┬─────┬─────┬─────┬────┤
+│State│Modes│ ISA │SysCall│Memory│Proc │I/O│
+├─────┴─────┴─────┴─────┴─────┴─────┴────┤
+│         Delegation Module               │
+│    (Web Search, REPL, Extensions)       │
+└─────────────────────────────────────────┘
 ```
 
-### State Components
+### Key Modules
 
-- **OS State**: Processes, files, filesystem, kernel
-- **Hardware State**: CPU registers, memory, MMU (FULL mode only)
-- **I/O State**: Streams, devices, buffers
-
-### Memory Layout
-
-```
-[0x0000-0x1000)  Kernel Space (protected)
-[0x1000-0x8000)  User Code (.text)
-[0x8000-0xC000)  User Data/Heap
-[0xC000-0xF000)  User Stack
-[0xF000-0x10000) Memory-mapped I/O
-```
-
-## Programs Repository
-
-UCVM includes a growing collection of utility programs designed specifically for the virtual machine environment. These programs are available in the `programs/` directory:
-
-### Available Programs
-
-#### 📖 **ucvm-doc** - Documentation Reader
-An interactive documentation browser that provides complete access to the UCVM specification without leaving the VM environment.
-
-```bash
-# Interactive mode
-./ucvm-doc
-
-# Read specific section
-./ucvm-doc 4  # View system calls
-
-# Search documentation
-./ucvm-doc search "memory"
-```
-
-Features:
-- Full UCVM v2.1 specification embedded
-- Color-coded formatting
-- Search functionality
-- Section navigation
-
-#### 🖥️ **ucvm-terminal** - Terminal Emulator
-Enables proper display of programs that use ANSI escape sequences for colors and formatting.
-
-```bash
-# Run a program with terminal emulation
-./term ./ucvm-doc
-
-# Interactive terminal mode
-./term
-```
-
-Features:
-- 80x24 character display
-- ANSI/VT100 escape sequence support
-- Color parsing and cursor control
-- Compatible with programs expecting terminal features
-
-### Installing Programs
-
-Programs can be compiled within UCVM:
-
-```bash
-# Compile the documentation reader
-gcc -o /bin/ucvm-doc programs/ucvm-doc/ucvm-doc.c
-
-# Compile the terminal emulator
-gcc -o /bin/term programs/ucvm-terminal/ucvm-terminal.c
-
-# Create convenient aliases
-echo 'alias docs="/bin/ucvm-doc"' >> ~/.bashrc
-echo 'alias vt100="/bin/term"' >> ~/.bashrc
-```
-
-### Contributing Programs
-
-The programs repository welcomes contributions. Guidelines:
-- Write in standard C (C99 compatible)
-- Include comprehensive README.md
-- Design for UCVM's environment
-- Follow Unix philosophy (do one thing well)
-- Test in both SIMPLIFIED and FULL modes
+1. **State Management** - Mandatory JSON artifact tracking
+2. **Execution Modes** - Control hardware visibility
+3. **Instruction Set** - x86-inspired RISC architecture
+4. **System Calls** - POSIX-compatible interface
+5. **Memory Management** - Segmented 64KB address space
+6. **Process Management** - Multi-process with context switching
+7. **I/O Subsystem** - Streams, files, and devices
+8. **Delegation Services** - External tool integration
+9. **Natural Language** - Command parsing and translation
+10. **Extension System** - Plugin architecture
 
 ## Examples
 
-### Running Programs
-
-```
-User: compile and run a Hello World C program
-System: [SIMPLIFIED] Compiling hello.c...
-        [AUTO→FULL] Loading ELF binary...
-        [FULL] Executing instructions...
-Output: Hello, World!
-```
-
-### Assembly Programming
-
-```
-User: load this assembly program:
-      MOV r0, 42
-      MOV r1, 8  
-      ADD r0, r1
-      SYSCALL    ; exit with code in r0
-
-System: [FULL mode]
-        PC: 0x1000 → MOV r0, 42    [r0 = 42]
-        PC: 0x1002 → MOV r1, 8     [r1 = 8]
-        PC: 0x1004 → ADD r0, r1    [r0 = 50]
-        PC: 0x1006 → SYSCALL       [exit(50)]
-Output: Process exited with code 50
+### Running a Program
+```code
+$ cat > hello.c
+#include <stdio.h>
+int main() {
+    printf("Hello from UCVM!\n");
+    return 0;
+}
+^D
+$ gcc hello.c -o hello
+$ ./hello
+Hello from UCVM!
 ```
 
-### System Call Tracing
-
-```
-User: trace system calls while running ls
-System: [Trace enabled]
-        open("/", O_RDONLY) = 3
-        getdents(3, ...) = 48
-        write(1, "bin\netc\nhome\n", 13) = 13
-        close(3) = 0
-Output: bin
-        etc
-        home
+### Web Search Integration
+```code
+$ search "weather in Paris"
+[Searching web...]
+Current weather in Paris: 15°C, partly cloudy
 ```
 
-### Debugging
-
-```
-User: set breakpoint at address 0x1004 and run
-System: [Breakpoint set at 0x1004]
-        [Executing... stopped at breakpoint]
-        PC: 0x1004, Next: ADD r0, r1
-        Registers: r0=42, r1=8
-
-User: step
-System: [Executed ADD r0, r1]
-        PC: 0x1006, r0=50, Flags: ZF=0
-```
-
-## Advanced Features
-
-### Complex Computation Delegation
-
-When operations exceed Claude's pattern-matching capabilities:
-
-```
-User: calculate 2^100 * 3^50
-System: [Delegating to computational engine...]
-Output: 515377520732011331036461129765621272702107522001
+### Complex Computation via REPL
+```code
+$ calc "Array.from({length: 10}, (_, i) => i ** 2)"
+[Executing JavaScript...]
+[0, 1, 4, 9, 16, 25, 36, 49, 64, 81]
 ```
 
 ### Process Management
+```code
+$ ps
+PID  PPID  STATE     COMMAND
+1    0     RUNNING   init
+2    1     RUNNING   bash
 
-```
-User: fork a child process that counts to 5
-System: [Process 2 created]
-        [Process 2]: 1
-        [Process 2]: 2
-        [Process 2]: 3
-        [Process 2]: 4
-        [Process 2]: 5
-        [Process 2 exited]
-```
+$ sleep 10 &
+[1] 3
+$ ps
+PID  PPID  STATE     COMMAND
+1    0     RUNNING   init
+2    1     RUNNING   bash
+3    2     SLEEPING  sleep
 
-### File System Operations
-
-```
-User: create directory /home/user and navigate there
-System: mkdir("/home/user", 0755) = 0
-        chdir("/home/user") = 0
-        
-User: show current directory
-Output: /home/user
+$ kill 3
+[1]+ Terminated    sleep 10
 ```
 
-## Command Reference
+## Design Philosophy
 
-### Mode Control
-- `mode simplified` - OS-level operations only
-- `mode full` - Enable hardware simulation
-- `mode auto` - Automatic mode selection
-
-### Output Control
-- `output` - Show current output mode
-- `output raw` - Pure VM output only (default)
-- `output verbose` - Include Claude's explanations
-- `output debug` - Show all state changes
-
-### Debugging Commands
-- `dump registers` - Show CPU state (FULL mode)
-- `dump memory <addr>` - Inspect memory contents
-- `breakpoint <addr>` - Set execution breakpoint
-- `trace on/off` - Enable/disable verbose output
-- `syscall trace` - Trace system calls only
-
-### System Commands
-- `ps` - List processes
-- `kill <pid>` - Terminate process
-- `signal <pid> <sig>` - Send signal
-- `memory stats` - Show memory usage
-
-## Important Notes
-
-1. **Claude's Role**: Claude acts as the VM interpreter, not the VM itself. Claude translates your commands into VM operations while maintaining its identity as an AI assistant.
-
-2. **State Persistence**: The VM state is maintained across messages in the conversation as JSON. Each interaction builds upon the previous state.
-
-3. **Output Format**: By default (RAW mode), only stdout/stderr are shown. Use VERBOSE or DEBUG modes for Claude's explanations.
-
-4. **Performance**: Complex calculations (cryptography, large numbers, compression) are automatically delegated to computational tools.
-
-## Technical Specifications
-
-- **Architecture**: 16-bit address space, 32-bit registers
-- **Instruction Set**: RISC-like with 31 core instructions
-- **System Calls**: POSIX-compliant (fork, exec, open, read, write, etc.)
-- **Memory**: 64KB total, segmented protection
-- **Process Model**: Preemptive multitasking with signals
+1. **Constraint Over Performance** - Hardware simulation ensures explicit state management
+2. **Transparency Over Efficiency** - Every operation is visible and traceable
+3. **Determinism Over Flexibility** - Reproducible execution is paramount
 
 ## Contributing
 
-This is a theoretical VM specification implemented through Claude's capabilities. To experiment with UCVM:
+We welcome contributions! Areas of interest:
 
-1. Start a conversation with Claude
-2. Share the UCVM specification document
-3. Begin issuing commands
+- 🔌 **Extensions**: Network stack, graphics subsystem, audio devices
+- 🛠️ **Tools**: Debuggers, visualizers, development utilities
+- 🧪 **Testing**: Test suites, benchmarks, validation tools
 
-To contribute programs or improvements:
-1. Follow the mathematical specification rigorously
-2. Test in both SIMPLIFIED and FULL modes
-3. Document your additions thoroughly
-4. Ensure Unix compatibility
+## FAQ
 
-## Version History
+### Q: Is UCVM a real virtual machine?
+A: UCVM is a specification for constrained AI execution. It requires Claude to simulate a virtual machine, ensuring deterministic and traceable computation. While not a traditional VM, it provides real computational capabilities through Claude.
 
-- **v2.1** (2024-01-15): Current version with enhanced output control
-- **v2.0** (2024-01-15): Unified dual-mode architecture
-- **v1.0** (2023-12-01): Initial hardware-only version
+### Q: Can I run real Linux programs?
+A: UCVM implements a subset of POSIX system calls and can run simple C programs compiled for its architecture. Complex programs requiring features like networking, threads, or GUI are not yet supported (but can be added via extensions).
+
+### Q: Why only 64KB of memory?
+A: The 64KB limit is intentional - it keeps the state manageable and ensures all operations remain traceable. Future versions may offer extended memory options.
+
+### Q: Can I save and restore sessions?
+A: Yes! The JSON state artifact contains the complete system state. You can save it and restore it in a new conversation with Claude to continue where you left off.
+
+### Q: How does it compare to QEMU/VirtualBox?
+A: Traditional VMs optimize for performance and run on real hardware. UCVM optimizes for transparency and constraint, running through Claude's interpretation. This makes it slower but provides unique benefits for education, debugging, and AI behavior analysis.
 
 ## License
 
-This specification is provided for educational and research purposes.
+UCVM is released under the MIT License. See [LICENSE](LICENSE) for details.
+
+## Acknowledgments
+
+UCVM was designed to explore new approaches to AI constraint and computer science education. Special thanks to the Claude team at Anthropic for making this possible.
 
 ---
 
-*UCVM demonstrates how formal mathematical specifications can create precise, verifiable systems while maintaining practical usability through natural language interfaces.*
+**Note**: UCVM requires Claude (Anthropic) to function. It is not a standalone virtual machine but rather a specification for constrained AI execution.
+
+## Citation
+
+If you use UCVM in your research, please cite:
+```bibtex
+@software{ucvm2025,
+  title = {UCVM: Unified Claude-Mediated Virtual Machine},
+  version = {3.0},
+  year = {2025},
+  url = {https://github.com/PSthelyBlog/ucvm}
+}
+```
