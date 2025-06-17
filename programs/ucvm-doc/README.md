@@ -1,4 +1,4 @@
-# UCVM Documentation Reader
+# UCVM Documentation Reader (OBSOLETE PROGRAM)
 
 A comprehensive documentation browser for the Unified Claude-Mediated Virtual Machine (UCVM) specification. This program provides an interactive interface to navigate, search, and read the complete UCVM documentation directly within the UCVM environment.
 
