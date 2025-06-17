@@ -2,7 +2,7 @@
 
 **Version:** 3.0  
 **Creation Date:** 2025-06-17   
-**Date:** [update system date znd time with search date]   
+**Date:** [update system date and time with search date]   
 **Architecture:** Modular Design
 
 ## Table of Contents
