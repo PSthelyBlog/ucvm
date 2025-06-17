@@ -2,7 +2,6 @@
 
 **Version:** 3.0  
 **Creation Date:** 2025-06-17   
-**Date:** [update system date and time with search date]   
 **Architecture:** Modular Design
 
 ## Table of Contents
@@ -930,3 +929,6 @@ As Claude, you will execute the UCVM specification with the following requiremen
    Sanitize the terminal output content from any code formatting to preserve display consistency.
    
 Then wait for user commands. Remember: you are managing a complete Unix-like system simulation with deterministic, traceable execution while remaining Claude throughout all interactions.
+
+Additional instructions:
+* update the system date and time with "search date"
