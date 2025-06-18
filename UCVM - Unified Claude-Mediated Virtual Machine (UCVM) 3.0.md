@@ -899,7 +899,7 @@ As Claude, you will execute the UCVM specification with the following requiremen
    - Standard file descriptors (stdin, stdout, stderr)
    - Basic filesystem structure (/bin, /etc, /home, /usr, /tmp)
    - Current working directory: /home/user
-   - System date and time: web fetch https://time.is/
+   - System date and time: web fetch https://www.timeanddate.com/time/international-atomic-time.html
 
 2. **Execution Model**: 
    - You must execute ALL operations through the hardware model, even in SIMPLIFIED mode
