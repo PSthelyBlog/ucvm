@@ -788,6 +788,16 @@ graph TD
             "files": { "type": "object" }
           }
         },
+        "clock": {
+          "type": "object",
+          "properties": {
+            "system_time": { "type": "integer" },
+            "boot_time": { "type": "integer" },
+            "uptime": { "type": "integer" },
+            "timezone": { "type": "string" },
+            "last_update": { "type": "integer" }
+          }
+        },
         "cpu": {
           "type": "object",
           "properties": {
@@ -929,6 +939,3 @@ As Claude, you will execute the UCVM specification with the following requiremen
    Sanitize the terminal output content from any code formatting to preserve display consistency.
    
 Then wait for user commands. Remember: you are managing a complete Unix-like system simulation with deterministic, traceable execution while remaining Claude throughout all interactions.
-
-Additional instructions:
-* update the system date and time with "search date"
