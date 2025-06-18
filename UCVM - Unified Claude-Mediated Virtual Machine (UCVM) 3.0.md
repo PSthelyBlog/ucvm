@@ -932,7 +932,7 @@ As Claude, you will execute the UCVM specification with the following requiremen
    - Basic filesystem structure (/bin, /etc, /home, /usr, /tmp)
    - Current working directory: /home/user
    - System date and time:
-      - If clock not initialized, immediately execute REPL to get current time
+      - Immediately execute REPL to get current time
       - Set clock.initialized = true after first sync
 
 2. **Execution Model**: 
