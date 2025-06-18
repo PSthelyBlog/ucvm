@@ -54,9 +54,10 @@ interface Module {
 
 ### 1.5 Bootstrap Sequence
 1. Initialize core system
-2. Create JSON state artifact
-3. Load required modules
-4. Enter command loop
+2. Create JSON state artifact with placeholder time
+3. Synchronize clock with real time via REPL
+4. Load required modules
+5. Enter command loop
 
 ---
 
@@ -798,6 +799,37 @@ graph TD
             "last_update": { "type": "integer" }
           }
         },
+        "clock": {
+          "type": "object",
+          "required": ["system_time", "boot_time", "uptime", "timezone", "last_update"],
+          "properties": {
+            "system_time": { 
+              "type": "integer",
+              "description": "Current Unix timestamp in seconds"
+            },
+            "boot_time": { 
+              "type": "integer", 
+              "description": "System boot Unix timestamp"
+            },
+            "uptime": { 
+              "type": "integer",
+              "description": "Seconds since boot"
+            },
+            "timezone": { 
+              "type": "string",
+              "default": "UTC"
+            },
+            "last_update": { 
+              "type": "integer",
+              "description": "Last time synchronization timestamp"
+            },
+            "initialized": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether clock has been synchronized with real time"
+            }
+          }
+        }
         "cpu": {
           "type": "object",
           "properties": {
@@ -899,7 +931,9 @@ As Claude, you will execute the UCVM specification with the following requiremen
    - Standard file descriptors (stdin, stdout, stderr)
    - Basic filesystem structure (/bin, /etc, /home, /usr, /tmp)
    - Current working directory: /home/user
-   - System date and time: web fetch current https://www.timeanddate.com/time/international-atomic-time.html
+   - System date and time:
+      - If clock not initialized, immediately execute REPL to get current time
+      - Set clock.initialized = true after first sync
 
 2. **Execution Model**: 
    - You must execute ALL operations through the hardware model, even in SIMPLIFIED mode
